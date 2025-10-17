@@ -5,6 +5,7 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { useRouter } from "expo-router";
 import { AlarmService } from "@/services/AlarmService";
 import TimeDialSelector from "@/components/dials/TimeDialSelector";
+import GlassView from "@/components/GlassView";
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
 
@@ -51,7 +52,7 @@ export default function NewAlarmScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>      
-      <View style={styles.row}>        
+      <GlassView style={{ gap: 8 }}>
         <Text style={[styles.label, { color: theme.textSecondary }]}>Ora</Text>
         <TimeDialSelector
           testID="time-dial"
@@ -87,9 +88,9 @@ export default function NewAlarmScreen() {
             accessibilityLabel="Minuti"
           />
         </View>
-      </View>
+      </GlassView>
 
-      <View style={styles.row}>
+      <GlassView style={{ gap: 8 }}>
         <Text style={[styles.label, { color: theme.textSecondary }]}>Ripeti</Text>
         <View style={styles.days}>
           {[0,1,2,3,4,5,6].map((d) => (
@@ -103,9 +104,9 @@ export default function NewAlarmScreen() {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </GlassView>
 
-      <View style={styles.row}>        
+      <GlassView style={{ gap: 8 }}>
         <Text style={[styles.label, { color: theme.textSecondary }]}>Etichetta</Text>
         <TextInput
           testID="label-input"
@@ -115,9 +116,9 @@ export default function NewAlarmScreen() {
           onChangeText={setLabel}
           style={[styles.textInput, { color: theme.textPrimary, backgroundColor: theme.surface }]}
         />
-      </View>
+      </GlassView>
 
-      <View style={styles.row}>        
+      <GlassView style={{ gap: 8 }}>
         <Text style={[styles.label, { color: theme.textSecondary }]}>Suono</Text>
         <View style={styles.sounds}>
           {SOUND_PRESETS.map((s) => (
@@ -130,7 +131,7 @@ export default function NewAlarmScreen() {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </GlassView>
 
       <TouchableOpacity
         testID="save-alarm"
