@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import { Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAlarms, RepeatDay, SOUND_PRESETS } from "@/stores/AlarmStore";
 import { useTheme } from "@/providers/ThemeProvider";
 import { useRouter } from "expo-router";
 import { AlarmService } from "@/services/AlarmService";
+import TimeDialSelector from "@/components/dials/TimeDialSelector";
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
 
@@ -15,6 +16,8 @@ export default function NewAlarmScreen() {
   const now = new Date();
   const [hh, setHh] = useState<string>(pad(now.getHours()));
   const [mm, setMm] = useState<string>(pad(now.getMinutes()));
+  const hhRef = useRef<TextInput | null>(null);
+  const mmRef = useRef<TextInput | null>(null);
   const [label, setLabel] = useState<string>("");
   const [repeatDays, setRepeatDays] = useState<RepeatDay[]>([]);
   const [sound, setSound] = useState<string>(SOUND_PRESETS[0]?.key ?? "alarm_soft");
@@ -50,8 +53,20 @@ export default function NewAlarmScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>      
       <View style={styles.row}>        
         <Text style={[styles.label, { color: theme.textSecondary }]}>Ora</Text>
+        <TimeDialSelector
+          testID="time-dial"
+          hour={parseInt(hh, 10)}
+          minute={parseInt(mm, 10)}
+          onChangeHour={(v: number) => setHh(pad(((v % 24) + 24) % 24))}
+          onChangeMinute={(v: number) => setMm(pad(((v % 60) + 60) % 60))}
+          onCenterPress={() => {
+            if (Platform.OS === "web") return;
+            hhRef.current?.focus();
+          }}
+        />
         <View style={styles.timeRow}>
           <TextInput
+            ref={(r) => { hhRef.current = r; }}
             testID="hh-input"
             keyboardType="number-pad"
             value={hh}
@@ -62,6 +77,7 @@ export default function NewAlarmScreen() {
           />
           <Text style={[styles.colon, { color: theme.textSecondary }]}>:</Text>
           <TextInput
+            ref={(r) => { mmRef.current = r; }}
             testID="mm-input"
             keyboardType="number-pad"
             value={mm}
