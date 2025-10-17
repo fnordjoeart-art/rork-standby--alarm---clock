@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "@/providers/ThemeProvider";
 import DigitalClock from "@/components/clocks/DigitalClock";
+import { useRouter } from "expo-router";
+import { useAlarms } from "@/stores/AlarmStore";
 
 const BG_IMAGES = [
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1920&auto=format&fit=crop",
@@ -14,6 +16,8 @@ type LayoutMode = "full" | "split";
 
 export default function ClockScreen() {
   const { theme } = useTheme();
+  const router = useRouter();
+  const { alarms } = useAlarms();
   const [layout, setLayout] = useState<LayoutMode>("full");
   const [bgIndex, setBgIndex] = useState<number>(0);
 
@@ -33,6 +37,11 @@ export default function ClockScreen() {
           <View style={styles.overlay} pointerEvents="none" />
           <View style={styles.overlayContent}>
             <DigitalClock color={theme.textPrimary} accent={theme.primaryAccent} />
+            {alarms.length === 0 ? (
+              <Text style={[styles.noAlarm, { color: theme.textSecondary }]} accessibilityElementsHidden>
+                Nessuna sveglia impostata
+              </Text>
+            ) : null}
           </View>
         </View>
       ) : (
@@ -61,6 +70,13 @@ export default function ClockScreen() {
         >
           <Text style={[styles.buttonText, { color: theme.textPrimary }]}>Next Background</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          testID="open-alarms"
+          onPress={() => router.push("/(tabs)/(clock)/alarms")}
+          style={[styles.button, { backgroundColor: theme.surface }]}
+        >
+          <Text style={[styles.buttonText, { color: theme.textPrimary }]}>Sveglie</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -71,6 +87,7 @@ const styles = StyleSheet.create({
   fullContainer: { flex: 1 },
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.15)" },
   overlayContent: { flex: 1, alignItems: "center", justifyContent: "center" },
+  noAlarm: { marginTop: 12, fontSize: 12 },
   splitContainer: { flex: 1, flexDirection: "row" as const },
   splitLeft: { flex: 1, alignItems: "center", justifyContent: "center" },
   splitRight: { flex: 1 },
