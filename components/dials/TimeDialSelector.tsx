@@ -44,8 +44,8 @@ export default function TimeDialSelector({ hour, minute, onChangeHour, onChangeM
   };
 
   const panHour = useRef<PanResponderInstance>(PanResponder.create({
-    onStartShouldSetPanResponder: () => Platform.OS !== "web",
-    onMoveShouldSetPanResponder: () => Platform.OS !== "web",
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: () => {},
     onPanResponderMove: (_, g) => {
       const ang = angleFromCenter(center.current.x, center.current.y, g.moveX, g.moveY);
@@ -62,8 +62,8 @@ export default function TimeDialSelector({ hour, minute, onChangeHour, onChangeM
   })).current;
 
   const panMinute = useRef<PanResponderInstance>(PanResponder.create({
-    onStartShouldSetPanResponder: () => Platform.OS !== "web",
-    onMoveShouldSetPanResponder: () => Platform.OS !== "web",
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
     onPanResponderMove: (_, g) => {
       const ang = angleFromCenter(center.current.x, center.current.y, g.moveX, g.moveY);
       const deg = (ang * 180) / Math.PI;
@@ -92,56 +92,50 @@ export default function TimeDialSelector({ hour, minute, onChangeHour, onChangeM
       accessibilityRole="adjustable"
       accessibilityLabel={`Selettore orario ${hour}:${minute.toString().padStart(2, "0")}`}
     >
-      {Platform.OS === "web" ? (
-        <View style={{ alignItems: "center", gap: 12 }}>
-          <Text style={{ color: theme.textSecondary }}>Web: usa gli input sottostanti</Text>
+      <View style={[styles.dialWrap, { width: size, height: size }]}>          
+        <View style={[styles.ring, { borderColor: theme.surface }]} {...panHour.panHandlers}>
+          {outerTicks.map((i) => {
+            const ang = (i / 24) * 2 * Math.PI;
+            const r = size / 2 - 14;
+            const x = size / 2 + Math.sin(ang) * r;
+            const y = size / 2 - Math.cos(ang) * r;
+            const isMajor = i % 3 === 0;
+            const selected = i === hour;
+            return (
+              <View key={`h-${i}`} style={[styles.tickWrap, { left: x - 8, top: y - 8 }]}>                  
+                <Text style={{ color: selected ? theme.primaryAccent : theme.textSecondary, fontSize: isMajor ? 14 : 10, fontWeight: selected ? ("700" as const) : ("400" as const), textShadowColor: selected ? theme.glowSoftA : undefined, textShadowRadius: selected ? 8 : 0 }}>{isMajor ? i : ""}</Text>
+              </View>
+            );
+          })}
+          <Animated.View style={[styles.indicator, hStyle, { borderTopColor: theme.primaryAccent }]} />
         </View>
-      ) : (
-        <View style={[styles.dialWrap, { width: size, height: size }]}>          
-          <View style={[styles.ring, { borderColor: theme.surface }]} {...panHour.panHandlers}>
-            {outerTicks.map((i) => {
-              const ang = (i / 24) * 2 * Math.PI;
-              const r = size / 2 - 14;
-              const x = size / 2 + Math.sin(ang) * r;
-              const y = size / 2 - Math.cos(ang) * r;
-              const isMajor = i % 3 === 0;
-              const selected = i === hour;
-              return (
-                <View key={`h-${i}`} style={[styles.tickWrap, { left: x - 8, top: y - 8 }]}>                  
-                  <Text style={{ color: selected ? theme.primaryAccent : theme.textSecondary, fontSize: isMajor ? 14 : 10, fontWeight: selected ? ("700" as const) : ("400" as const), textShadowColor: selected ? theme.glowSoftA : undefined, textShadowRadius: selected ? 8 : 0 }}>{isMajor ? i : ""}</Text>
-                </View>
-              );
-            })}
-            <Animated.View style={[styles.indicator, hStyle, { borderTopColor: theme.primaryAccent }]} />
-          </View>
-          <View style={[styles.ringInner, { borderColor: theme.surface }]} {...panMinute.panHandlers}>
-            {innerTicks.map((i) => {
-              if (i % 5 !== 0) return null;
-              const ang = (i / 60) * 2 * Math.PI;
-              const r = size / 2 - 44;
-              const x = size / 2 + Math.sin(ang) * r;
-              const y = size / 2 - Math.cos(ang) * r;
-              const selected = i === minute;
-              return (
-                <View key={`m-${i}`} style={[styles.tickWrap, { left: x - 8, top: y - 8 }]}>                  
-                  <Text style={{ color: selected ? theme.primaryAccent : theme.textSecondary, fontSize: 12, fontWeight: selected ? ("700" as const) : ("400" as const), textShadowColor: selected ? theme.glowSoftB : undefined, textShadowRadius: selected ? 8 : 0 }}>{i.toString().padStart(2, "0")}</Text>
-                </View>
-              );
-            })}
-            <Animated.View style={[styles.indicatorInner, mStyle, { borderTopColor: theme.secondaryAccent }]} />
-            <View
-              testID="center-press"
-              accessibilityRole="button"
-              accessibilityLabel="Modifica manuale orario"
-              onTouchEnd={onCenterPress}
-              style={[styles.center, { backgroundColor: theme.surface }]
-            }
-            >
-              <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: "700" as const }}>{`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`}</Text>
-            </View>
+        <View style={[styles.ringInner, { borderColor: theme.surface }]} {...panMinute.panHandlers}>
+          {innerTicks.map((i) => {
+            if (i % 5 !== 0) return null;
+            const ang = (i / 60) * 2 * Math.PI;
+            const r = size / 2 - 44;
+            const x = size / 2 + Math.sin(ang) * r;
+            const y = size / 2 - Math.cos(ang) * r;
+            const selected = i === minute;
+            return (
+              <View key={`m-${i}`} style={[styles.tickWrap, { left: x - 8, top: y - 8 }]}>                  
+                <Text style={{ color: selected ? theme.primaryAccent : theme.textSecondary, fontSize: 12, fontWeight: selected ? ("700" as const) : ("400" as const), textShadowColor: selected ? theme.glowSoftB : undefined, textShadowRadius: selected ? 8 : 0 }}>{i.toString().padStart(2, "0")}</Text>
+              </View>
+            );
+          })}
+          <Animated.View style={[styles.indicatorInner, mStyle, { borderTopColor: theme.secondaryAccent }]} />
+          <View
+            testID="center-press"
+            accessibilityRole="button"
+            accessibilityLabel="Modifica manuale orario"
+            onTouchEnd={onCenterPress}
+            style={[styles.center, { backgroundColor: theme.surface }]
+          }
+          >
+            <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: "700" as const }}>{`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`}</Text>
           </View>
         </View>
-      )}
+      </View>
     </View>
   );
 }
